@@ -1,6 +1,6 @@
 {
   "name": "@gitcraft/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Craft production-ready releases from your Git history.",
   "homepage": "https://github.com/heyjohnford/gitcraft#readme",
   "keywords": [
