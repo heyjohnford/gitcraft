@@ -1,28 +1,79 @@
 # GitCraft
 
-**GitCraft** — Craft production-ready releases directly from your Git history.
+Craft production-ready releases directly from your Git history.
 
-GitCraft analyzes your commits, determines the correct Semantic Version bump, applies tags, generates changelogs, and publishes release metadata — all with zero configuration to start.
+GitCraft analyzes your commits, determines the correct SemVer bump, applies tags, generates changelogs, and publishes release metadata — all with zero configuration to start.
 
 ## Features
 
-- **Correct SemVer**: Properly detects breaking changes (`feat!`, `BREAKING CHANGE:`) and bumps major, minor, or patch accordingly.
-- **Release Channels**: Auto-maps branches to channels: `main` → stable, `develop` → alpha, `feature/*` → feature preview.
-- **Monorepo Support**: Independent versioning for packages within a monorepo using path filtering.
-- **Plugin System**: Extensible design for changelog generation, AI summaries, Slack notifications, and more.
-- **Azure-Native**: First-class Azure DevOps pipeline task with output variables.
-- **Dry Run Mode**: Preview exactly what will be released before committing.
+- **Correct SemVer** — Detects breaking changes (`feat!`, `BREAKING CHANGE:`) and bumps major, minor, or patch accordingly
+- **Release Channels** — Auto-maps branches to channels, or override manually
+- **Changelog Generation** — Generates and prepends to `CHANGELOG.md`, grouped by commit type
+- **Monorepo Support** — Independent versioning per package using path filtering
+- **Plugin System** — Extend with changelog, AI summaries, Slack notifications, and more
+- **Azure DevOps** — First-class pipeline task with output variables
+- **Dry Run Mode** — Preview exactly what will happen before committing anything
 
-## Quick Start
-
-### CLI
+## Installation
 
 ```bash
 npm install -g @gitcraft/cli
-gitcraft release --dry-run
 ```
 
-### Azure Pipelines
+## Usage
+
+```bash
+# Preview the next release
+gitcraft release --dry-run
+
+# Run a release on the current branch
+gitcraft release
+
+# Override the release channel
+gitcraft release --channel alpha
+
+# Scope to a subdirectory (monorepo)
+gitcraft release --path packages/api
+```
+
+## Configuration
+
+Create a `gitcraft.config.js` in your project root:
+
+```javascript
+module.exports = {
+  plugins: [
+    'changelog',
+    // 'ai-notes',
+  ],
+}
+```
+
+### Writing a Plugin
+
+```typescript
+import type { Plugin } from '@gitcraft/cli'
+
+const myPlugin: Plugin = {
+  name: 'my-plugin',
+  async onResolved(ctx) {
+    // Runs after version is computed, before any git actions
+    console.log(`Next version: ${ctx.result.nextVersion}`)
+  },
+  async onSuccess(ctx) {
+    // Runs after tag is pushed
+    console.log(`Released ${ctx.result.tag}`)
+  },
+  async onFailure(err) {
+    // Runs if the release fails
+    console.error(err)
+  },
+}
+
+module.exports = { plugins: [myPlugin] }
+```
+
+## Azure Pipelines
 
 ```yaml
 - task: GitCraft@1
@@ -31,18 +82,24 @@ gitcraft release --dry-run
     tagPrefix: 'v'
 ```
 
-## Configuration
+### Output Variables
 
-Create a `gitcraft.config.js` in your root:
+| Variable                | Description                           |
+| ----------------------- | ------------------------------------- |
+| `GitCraft.Version`      | The new version number (e.g. `1.2.0`) |
+| `GitCraft.Tag`          | The full git tag (e.g. `v1.2.0`)      |
+| `GitCraft.BumpType`     | `major`, `minor`, or `patch`          |
+| `GitCraft.ReleaseNotes` | Changelog entry for this release      |
 
-```javascript
-module.exports = {
-  plugins: [
-    'changelog',
-    'ai-notes',
-    // Custom plugins...
-  ],
-}
+## GitHub Actions
+
+```yaml
+- uses: actions/setup-node@v4
+  with:
+    node-version: '24'
+
+- name: Release
+  run: npx @gitcraft/cli release --channel stable
 ```
 
 ## License
