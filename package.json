@@ -1,0 +1,70 @@
+{
+  "name": "gitcraft",
+  "version": "0.1.0",
+  "description": "Craft production-ready releases from your Git history.",
+  "homepage": "https://github.com/YOUR_USERNAME/gitcraft#readme",
+  "keywords": [
+    "semver",
+    "release",
+    "git",
+    "changelog",
+    "versioning",
+    "conventional-commits",
+    "devops",
+    "ci-cd"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist/cli"
+  ],
+  "bin": {
+    "gitcraft": "./dist/cli/index.js"
+  },
+  "main": "./dist/cli/release.js",
+  "types": "./dist/cli/release.d.ts",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "npm run build:cli && npm run build:extension",
+    "prepublishOnly": "npm run build:cli",
+    "build:cli": "tsc -p tsconfig.cli.json",
+    "build:extension": "esbuild extension/task/index.ts --bundle --platform=node --target=node20 --outfile=dist/extension/task/index.js && node -e \"require('fs').copyFileSync('extension/task/task.json','dist/extension/task/task.json')\"",
+    "build:icon": "resvg-js-cli extension/icon.svg extension/icon.png",
+    "dev": "ts-node cli/src/index.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "package:extension": "npm run build:icon && npm run build:extension && tfx extension create --manifest-globs vss-extension.json --output-path dist/vsix"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "semver": "^7.6.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@resvg/resvg-js-cli": "2.6.2-beta.1",
+    "@types/node": "^24.0.0",
+    "@types/semver": "^7.5.0",
+    "azure-pipelines-task-lib": "^4.0.0",
+    "esbuild": "^0.27.3",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.3.0",
+    "tfx-cli": "^0.23.1",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "azure-pipelines-task-lib": {
+      "minimatch": "^3.1.4"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md,yml,yaml}": "prettier --write"
+  }
+}

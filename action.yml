@@ -1,0 +1,31 @@
+name: 'GitCraft Release'
+description: 'Automatically bump SemVer version from Git history.'
+author: 'GitCraft OSS'
+inputs:
+  releaseChannel:
+    description: 'Release channel: stable, alpha, beta, rc, feature'
+    required: false
+    default: 'stable'
+  tagPrefix:
+    description: 'Git tag prefix'
+    required: false
+    default: 'v'
+  dryRun:
+    description: 'Preview the release without creating tags or pushing'
+    required: false
+    default: 'false'
+  path:
+    description: 'Only analyze commits touching this path (monorepo support)'
+    required: false
+
+outputs:
+  version:
+    description: 'The resolved next semantic version'
+  tag:
+    description: 'The full git tag applied'
+  bumpType:
+    description: 'The version bump type applied: major, minor, or patch'
+
+runs:
+  using: 'node24'
+  main: 'dist/cli/index.js'

@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitCraft — Releases from your Git history</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --border: #30363d;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --accent: #58a6ff;
+        --green: #3fb950;
+        --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        line-height: 1.6;
+      }
+
+      header {
+        border-bottom: 1px solid var(--border);
+        padding: 1.25rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      header .logo {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--accent);
+      }
+
+      header nav {
+        margin-left: auto;
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      header nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+
+      header nav a:hover {
+        color: var(--text);
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 4rem;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 1rem;
+      }
+
+      .hero h1 span {
+        color: var(--accent);
+      }
+
+      .hero p {
+        font-size: 1.15rem;
+        color: var(--muted);
+        max-width: 520px;
+        margin: 0 auto 2rem;
+      }
+
+      .badges {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
+
+      .badge {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 2rem;
+        padding: 0.3rem 0.9rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .badge.green {
+        color: var(--green);
+        border-color: var(--green);
+      }
+
+      .cta {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 0.65rem 1.4rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #0d1117;
+      }
+
+      .btn-secondary {
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      .terminal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        margin: 3rem 0;
+        text-align: left;
+      }
+
+      .terminal .prompt {
+        color: var(--green);
+      }
+
+      .terminal .cmd {
+        color: var(--text);
+      }
+
+      .terminal .output {
+        color: var(--muted);
+        display: block;
+        margin-top: 0.5rem;
+      }
+
+      .terminal .version {
+        color: var(--accent);
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.25rem;
+        margin: 3rem 0;
+      }
+
+      .feature-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.5rem;
+      }
+
+      .feature-card .icon {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .feature-card h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .feature-card p {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .commits {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 3rem 0;
+      }
+
+      .commits-header {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .commit {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        padding: 0.6rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.85rem;
+      }
+
+      .commit:last-child {
+        border-bottom: none;
+      }
+
+      .commit .msg {
+        font-family: var(--font-mono);
+        flex: 1;
+      }
+
+      .commit .tag {
+        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+
+      .tag-major {
+        background: #3d1a1a;
+        color: #f85149;
+      }
+
+      .tag-minor {
+        background: #1a2d1a;
+        color: var(--green);
+      }
+
+      .tag-patch {
+        background: #1a2040;
+        color: var(--accent);
+      }
+
+      .channels {
+        margin: 3rem 0;
+      }
+
+      .channels h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+
+      th {
+        text-align: left;
+        padding: 0.5rem 1rem;
+        color: var(--muted);
+        font-weight: 500;
+        border-bottom: 1px solid var(--border);
+      }
+
+      td {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid var(--border);
+        font-family: var(--font-mono);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 2rem;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <span class="logo">GitCraft</span>
+      <nav>
+        <a href="https://github.com/gitcraft/gitcraft">GitHub</a>
+        <a href="https://marketplace.visualstudio.com/publishers/gitcraft">Marketplace</a>
+        <a href="https://github.com/gitcraft/gitcraft#readme">Docs</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <img src="./logo.png" alt="GitCraft Logo" width="300" style="margin-bottom: 1.5rem" />
+        <h1>Releases from your<br /><span>Git history.</span></h1>
+        <p>
+          GitCraft reads your commits, determines the version bump, creates the tag, and ships it —
+          zero config to start.
+        </p>
+
+        <div class="badges">
+          <span class="badge green">MIT License</span>
+          <span class="badge">Azure DevOps</span>
+          <span class="badge">CLI</span>
+          <span class="badge">Conventional Commits</span>
+        </div>
+
+        <div class="cta">
+          <a class="btn btn-primary" href="https://github.com/gitcraft/gitcraft">Get Started</a>
+          <a
+            class="btn btn-secondary"
+            href="https://marketplace.visualstudio.com/publishers/gitcraft"
+            >Azure Marketplace</a
+          >
+        </div>
+      </section>
+
+      <div class="terminal">
+        <span class="prompt">$</span> <span class="cmd">gitcraft release --dry-run</span>
+        <span class="output">
+          GitCraft Release [dry-run] 0.3.1 → <span class="version">0.4.0</span> (minor) Tag: v0.4.0
+          Commits: 7 No tag was created or pushed.
+        </span>
+      </div>
+
+      <div class="features">
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>Zero config start</h3>
+          <p>Works out of the box on any repo following Conventional Commits. No setup required.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔢</div>
+          <h3>Correct SemVer</h3>
+          <p>
+            Detects breaking changes (feat!, BREAKING CHANGE:) and bumps major, minor, or patch
+            accordingly.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🏢</div>
+          <h3>Monorepo support</h3>
+          <p>
+            Independent versioning for packages within a monorepo. Use path filtering and custom tag
+            prefixes.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🌿</div>
+          <h3>Release channels</h3>
+          <p>
+            Auto-maps branches to channels: main → stable, develop → alpha, feature/* → feature
+            preview.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔵</div>
+          <h3>Azure-native</h3>
+          <p>
+            First-class Azure DevOps pipeline task. Exposes version, tag, and bump type as pipeline
+            variables.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔍</div>
+          <h3>Dry run mode</h3>
+          <p>Preview exactly what will be released before committing. Safe to run in PR builds.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🧩</div>
+          <h3>Plugin-ready</h3>
+          <p>
+            Extensible design for changelog generation, Slack notifications, Jira integration, and
+            more.
+          </p>
+        </div>
+      </div>
+
+      <div class="commits">
+        <div class="commits-header">Commit → Version bump mapping</div>
+        <div class="commit">
+          <span class="msg">feat(auth)!: replace session tokens with JWT</span>
+          <span class="tag tag-major">major</span>
+        </div>
+        <div class="commit">
+          <span class="msg">feat: add dark mode support</span>
+          <span class="tag tag-minor">minor</span>
+        </div>
+        <div class="commit">
+          <span class="msg">fix: resolve crash on empty commit list</span>
+          <span class="tag tag-patch">patch</span>
+        </div>
+        <div class="commit">
+          <span class="msg">perf: reduce tag resolution overhead</span>
+          <span class="tag tag-patch">patch</span>
+        </div>
+      </div>
+
+      <div class="channels">
+        <h2>Release Channels</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Branch</th>
+              <th>Channel</th>
+              <th>Example output</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>main / master</td>
+              <td>stable</td>
+              <td>1.4.0</td>
+            </tr>
+            <tr>
+              <td>develop</td>
+              <td>alpha</td>
+              <td>1.4.0-alpha.2</td>
+            </tr>
+            <tr>
+              <td>release/*</td>
+              <td>rc</td>
+              <td>1.4.0-rc.0</td>
+            </tr>
+            <tr>
+              <td>feature/*</td>
+              <td>feature</td>
+              <td>1.4.0-feature-login.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        GitCraft is open source under the <a href="LICENSE">MIT License</a>. Built for developers
+        who ship.
+      </p>
+    </footer>
+  </body>
+</html>

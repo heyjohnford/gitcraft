@@ -1,0 +1,33 @@
+{
+  "manifestVersion": 1,
+  "id": "gitcraft",
+  "name": "GitCraft",
+  "publisher": "gitcraft",
+  "version": "0.1.0",
+  "description": "Craft releases automatically from Git commits using Semantic Versioning.",
+  "categories": ["Azure Pipelines"],
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "icons": {
+    "default": "extension/icon.png"
+  },
+  "files": [
+    {
+      "path": "dist/extension/task",
+      "packagePath": "task"
+    }
+  ],
+  "contributions": [
+    {
+      "id": "gitcraft-task",
+      "type": "ms.vss-distributed-task.task",
+      "targets": ["ms.vss-distributed-task.tasks"],
+      "properties": {
+        "name": "task"
+      }
+    }
+  ]
+}

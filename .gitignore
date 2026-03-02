@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.vsix
+*.js.map
+.DS_Store
+.claude/
+.vscode/
+.idea/
+.husky/_/

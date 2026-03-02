@@ -1,0 +1,83 @@
+{
+  "id": "d695dd41-7af6-4704-9704-ceebde0dc9aa",
+  "name": "GitCraft",
+  "friendlyName": "GitCraft Version & Release",
+  "description": "Automatically bump SemVer versions from Git commits using Conventional Commits.",
+  "helpMarkDown": "[Learn more](https://github.com/gitcraft/gitcraft)",
+  "author": "GitCraft OSS",
+  "category": "Utility",
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "instanceNameFormat": "GitCraft $(releaseChannel) release",
+  "minimumAgentVersion": "2.144.0",
+  "inputs": [
+    {
+      "name": "releaseChannel",
+      "type": "pickList",
+      "label": "Release Channel",
+      "defaultValue": "stable",
+      "required": false,
+      "options": {
+        "stable": "Stable",
+        "alpha": "Alpha",
+        "beta": "Beta",
+        "rc": "Release Candidate",
+        "feature": "Feature Preview"
+      },
+      "helpMarkDown": "Determines the pre-release suffix. Auto-detected from the current branch when left empty."
+    },
+    {
+      "name": "tagPrefix",
+      "type": "string",
+      "label": "Tag Prefix",
+      "defaultValue": "v",
+      "required": false,
+      "helpMarkDown": "Prefix applied to git tags (e.g. 'v' produces v1.2.3)."
+    },
+    {
+      "name": "path",
+      "type": "string",
+      "label": "Path Filter",
+      "defaultValue": "",
+      "required": false,
+      "helpMarkDown": "Only analyze commits touching this path. Used for independent versioning in monorepos. Example: packages/api"
+    },
+    {
+      "name": "dryRun",
+      "type": "boolean",
+      "label": "Dry Run",
+      "defaultValue": "false",
+      "required": false,
+      "helpMarkDown": "Preview the release without creating tags, pushing, or writing the changelog. Safe to use in PR builds."
+    }
+  ],
+  "outputVariables": [
+    {
+      "name": "Version",
+      "description": "The resolved next semantic version (e.g. 1.4.0 or 1.4.0-alpha.2)."
+    },
+    {
+      "name": "Tag",
+      "description": "The full git tag applied (e.g. v1.4.0)."
+    },
+    {
+      "name": "BumpType",
+      "description": "The version bump type applied: major, minor, or patch."
+    },
+    {
+      "name": "ReleaseNotes",
+      "description": "Generated CHANGELOG.md entry for this release in Markdown format."
+    }
+  ],
+  "execution": {
+    "Node20": {
+      "target": "index.js"
+    },
+    "Node16": {
+      "target": "index.js"
+    }
+  }
+}
