@@ -15,7 +15,8 @@
   ],
   "license": "MIT",
   "files": [
-    "dist/cli"
+    "dist/cli",
+    "!dist/cli/__tests__"
   ],
   "bin": {
     "gitcraft": "dist/cli/index.js"

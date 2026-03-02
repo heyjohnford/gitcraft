@@ -5,5 +5,5 @@
     "rootDir": "./cli/src"
   },
   "include": ["cli/src/**/*"],
-  "exclude": ["node_modules", "dist", "cli/src/__tests__"]
+  "exclude": ["node_modules", "dist", "cli/src/__tests__/**/*"]
 }
