@@ -18,7 +18,7 @@ GitCraft analyzes your commits, determines the correct Semantic Version bump, ap
 ### CLI
 
 ```bash
-npm install -g gitcraft
+npm install -g @gitcraft/cli
 gitcraft release --dry-run
 ```
 
