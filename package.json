@@ -2,7 +2,7 @@
   "name": "gitcraft",
   "version": "0.1.0",
   "description": "Craft production-ready releases from your Git history.",
-  "homepage": "https://github.com/YOUR_USERNAME/gitcraft#readme",
+  "homepage": "https://github.com/heyjohnford/gitcraft#readme",
   "keywords": [
     "semver",
     "release",
