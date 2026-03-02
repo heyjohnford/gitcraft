@@ -18,7 +18,7 @@
     "dist/cli"
   ],
   "bin": {
-    "gitcraft": "./dist/cli/index.js"
+    "gitcraft": "dist/cli/index.js"
   },
   "main": "./dist/cli/release.js",
   "types": "./dist/cli/release.d.ts",
