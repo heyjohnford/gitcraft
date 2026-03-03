@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import { execSync } from 'node:child_process'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Plugin } from '../plugins'
 import { createRelease } from '../release'
 import * as tags from '../tags'
-import type { Plugin } from '../plugins'
-import { execSync } from 'child_process'
 
 vi.mock('../tags', () => ({
   resolveLatestTag: vi.fn(),
@@ -13,16 +13,25 @@ vi.mock('child_process', () => ({
   execSync: vi.fn(),
 }))
 
-describe('Plugin System', () => {
-  it('executes onResolved and onSuccess hooks', async () => {
-    ;(tags.resolveLatestTag as any).mockReturnValue({
-      latest: '1.0.0',
-      tag: 'v1.0.0',
-      isInitial: false,
-    })
-    ;(tags.getCommitsSinceTag as any).mockReturnValue(['feat: new feature'])
-    ;(execSync as any).mockReturnValue('main') // for getCurrentBranch
+const mockExecSync = vi.mocked(execSync)
 
+function setupMocks() {
+  ;(tags.resolveLatestTag as ReturnType<typeof vi.fn>).mockReturnValue({
+    latest: '1.0.0',
+    tag: 'v1.0.0',
+    isInitial: false,
+  })
+  ;(tags.getCommitsSinceTag as ReturnType<typeof vi.fn>).mockReturnValue(['feat: new feature'])
+  mockExecSync.mockReturnValue('main' as any) // getCurrentBranch
+}
+
+describe('Plugin System', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    setupMocks()
+  })
+
+  it('executes onResolved and onSuccess hooks', async () => {
     const plugin: Plugin = {
       name: 'test-plugin',
       onResolved: vi.fn(),
@@ -36,13 +45,6 @@ describe('Plugin System', () => {
   })
 
   it('does not execute onSuccess in dryRun mode', async () => {
-    ;(tags.resolveLatestTag as any).mockReturnValue({
-      latest: '1.0.0',
-      tag: 'v1.0.0',
-      isInitial: false,
-    })
-    ;(tags.getCommitsSinceTag as any).mockReturnValue(['feat: new feature'])
-
     const plugin: Plugin = {
       name: 'test-plugin',
       onResolved: vi.fn(),

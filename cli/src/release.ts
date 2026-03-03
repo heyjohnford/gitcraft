@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 import { determineBump } from './analyzer'
 import type { Channel } from './channels'
 import { applyChannel, detectChannel } from './channels'
@@ -10,6 +10,7 @@ export interface ReleaseOptions {
   channel?: Channel
   tagPrefix?: string
   dryRun?: boolean
+  publish?: boolean
   plugins?: Plugin[]
   filterPath?: string
 }
@@ -21,6 +22,7 @@ export interface ReleaseResult {
   tag: string
   commitCount: number
   dryRun: boolean
+  published: boolean
   /** Populated by the changelog plugin — markdown for this release entry. */
   releaseNotes?: string
 }
@@ -29,7 +31,6 @@ export async function createRelease(opts: ReleaseOptions = {}): Promise<ReleaseR
   const prefix = opts.tagPrefix ?? 'v'
   const branch = getCurrentBranch()
   const channel = opts.channel ?? detectChannel(branch)
-
   const { latest, tag: latestTag, isInitial } = resolveLatestTag(prefix)
   const commits = getCommitsSinceTag(latestTag, isInitial, opts.filterPath)
 
@@ -49,35 +50,10 @@ export async function createRelease(opts: ReleaseOptions = {}): Promise<ReleaseR
     tag: nextTag,
     commitCount: commits.length,
     dryRun: opts.dryRun ?? false,
+    published: false,
   }
 
-  const context: PluginContext = { result, options: opts, commits }
-
-  // Run 'onResolved' hook
-  if (opts.plugins) {
-    for (const plugin of opts.plugins) {
-      if (plugin.onResolved) await plugin.onResolved(context)
-    }
-  }
-
-  if (!opts.dryRun) {
-    try {
-      if (opts.plugins) {
-        for (const plugin of opts.plugins) {
-          if (plugin.onSuccess) await plugin.onSuccess(context)
-        }
-      }
-    } catch (err) {
-      if (opts.plugins) {
-        for (const plugin of opts.plugins) {
-          if (plugin.onFailure) await plugin.onFailure(err as Error)
-        }
-      }
-      throw err
-    }
-  }
-
-  return result
+  return craft(result, opts, commits)
 }
 
 function getCurrentBranch(): string {
@@ -89,4 +65,67 @@ function getCurrentBranch(): string {
   } catch {
     throw new Error('Could not determine current Git branch.')
   }
+}
+
+function pushTag(tag: string): void {
+  try {
+    execSync(`git tag ${tag}`, { stdio: 'inherit' })
+    execSync(`git push origin ${tag}`, { stdio: 'inherit' })
+  } catch {
+    throw new Error(`Failed to create or push tag: ${tag}`)
+  }
+}
+
+async function runPluginResolved(
+  plugins: Plugin[] | undefined,
+  context: PluginContext
+): Promise<void> {
+  if (!plugins) return
+  for (const plugin of plugins) {
+    if (plugin.onResolved) await plugin.onResolved(context)
+  }
+}
+
+async function runPluginSuccess(
+  plugins: Plugin[] | undefined,
+  context: PluginContext
+): Promise<void> {
+  if (!plugins) return
+  for (const plugin of plugins) {
+    if (plugin.onSuccess) await plugin.onSuccess(context)
+  }
+}
+
+async function runPluginFailure(plugins: Plugin[] | undefined, error: Error): Promise<void> {
+  if (!plugins) return
+  for (const plugin of plugins) {
+    if (plugin.onFailure) await plugin.onFailure(error)
+  }
+}
+
+async function craft(
+  result: ReleaseResult,
+  options: ReleaseOptions,
+  commits: string[]
+): Promise<ReleaseResult> {
+  const context: PluginContext = { result, options, commits }
+
+  await runPluginResolved(options.plugins, context)
+
+  if (!options.dryRun) {
+    try {
+      if (options.publish) {
+        pushTag(result.tag)
+        result.published = true
+      }
+
+      await runPluginSuccess(options.plugins, context)
+    } catch (err) {
+      await runPluginFailure(options.plugins, err as Error)
+
+      throw err
+    }
+  }
+
+  return result
 }

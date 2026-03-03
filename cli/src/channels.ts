@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 
 export type Channel = 'stable' | 'alpha' | 'beta' | 'rc' | 'feature'
 
@@ -6,7 +6,7 @@ export type Channel = 'stable' | 'alpha' | 'beta' | 'rc' | 'feature'
 export function detectChannel(branch: string): Channel {
   if (branch === 'main' || branch === 'master') return 'stable'
   if (branch === 'develop') return 'alpha'
-  if (/^release\//.test(branch)) return 'rc'
+  if (branch.startsWith('release')) return 'rc'
   if (/^feat(ure)?\//.test(branch)) return 'feature'
   return 'alpha'
 }
@@ -39,9 +39,9 @@ export function applyChannel(
   if (channel === 'feature') {
     const slug = branch
       .replace(/(^feature|^feat)\//, '')
-      .replace(/[^a-zA-Z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
+      .replaceAll(/[^a-zA-Z0-9]/g, '-')
+      .replaceAll(/-+/g, '-')
+      .replaceAll(/^-|-$/g, '')
       .toLowerCase()
     return `${version}-${slug}`
   }
@@ -65,7 +65,7 @@ function getNextPreReleaseIndex(baseVersion: string, channel: string, prefix: st
       .filter(Boolean)
       .map((tag) => {
         const match = tag.match(/\.(\d+)$/)
-        return match ? parseInt(match[1], 10) : -1
+        return match ? Number.parseInt(match[1], 10) : -1
       })
       .filter((n) => n >= 0)
 
