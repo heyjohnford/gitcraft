@@ -4,6 +4,6 @@
     "outDir": "./dist/cli",
     "rootDir": "./cli/src"
   },
-  "include": ["cli/src/**/*"],
+  "include": ["cli/src/**/*", "package.json"],
   "exclude": ["node_modules", "dist", "cli/src/__tests__/**/*"]
 }

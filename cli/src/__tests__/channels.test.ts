@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 // Must be declared before importing the module under test so vitest can hoist it
 vi.mock('child_process')
 
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 import { applyChannel, detectChannel } from '../channels'
 
 const mockExecSync = vi.mocked(execSync)

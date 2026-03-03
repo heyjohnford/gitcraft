@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { createRelease } from './release'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { Channel } from './channels'
 import { loadConfig, resolvePlugins } from './config'
+import { createRelease } from './release'
+
+const { version } = JSON.parse(readFileSync(resolve(__dirname, './package.json'), 'utf-8')) as {
+  version: string
+}
 
 const program = new Command()
 
 program
   .name('gitcraft')
   .description('Craft production-ready releases from your Git history.')
-  .version('0.1.0')
+  .version(version)
 
 program
   .command('release')
@@ -17,6 +23,7 @@ program
   .option('-c, --channel <channel>', 'Release channel: stable, alpha, beta, rc, feature')
   .option('-p, --tag-prefix <prefix>', 'Git tag prefix', 'v')
   .option('-n, --dry-run', 'Preview the release without running plugins or writing files')
+  .option('--publish', 'Create and push the git tag to the remote')
   .option('--path <path>', 'Only analyze commits touching this path (monorepo support)')
   .action(async (opts) => {
     try {
@@ -27,6 +34,7 @@ program
         channel: opts.channel as Channel | undefined,
         tagPrefix: opts.tagPrefix,
         dryRun: opts.dryRun ?? false,
+        publish: opts.publish ?? false,
         plugins,
         filterPath: opts.path,
       })
@@ -36,6 +44,7 @@ program
       console.log(`  ${result.previousVersion}  →  ${result.nextVersion}  (${result.bumpType})`)
       console.log(`  Tag:     ${result.tag}`)
       console.log(`  Commits: ${result.commitCount}`)
+      if (result.published) console.log(`  Published: ${result.tag} pushed to origin`)
 
       if (result.dryRun) {
         console.log('\nDry run — no plugins ran, no files were written.')

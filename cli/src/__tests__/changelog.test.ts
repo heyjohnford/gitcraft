@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('fs')
 
-import fs from 'fs'
-import { ChangelogPlugin } from '../plugins/changelog'
+import fs from 'node:fs'
 import type { PluginContext } from '../plugins'
+import { ChangelogPlugin } from '../plugins/changelog'
 
 const plugin = new ChangelogPlugin()
 
@@ -164,6 +164,7 @@ function makeCtx(commits: string[]): PluginContext {
       tag: 'v1.4.0',
       commitCount: commits.length,
       dryRun: false,
+      published: false,
     },
     options: {},
     commits,
