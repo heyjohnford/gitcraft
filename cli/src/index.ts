@@ -6,7 +6,7 @@ import type { Channel } from './channels'
 import { loadConfig, resolvePlugins } from './config'
 import { createRelease } from './release'
 
-const { version } = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8')) as {
+const { version } = JSON.parse(readFileSync(resolve(__dirname, './package.json'), 'utf-8')) as {
   version: string
 }
 

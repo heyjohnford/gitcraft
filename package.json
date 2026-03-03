@@ -29,7 +29,7 @@
   "scripts": {
     "build": "npm run build:cli && npm run build:extension",
     "prepublishOnly": "npm run build:cli",
-    "build:cli": "tsc -p tsconfig.cli.json",
+    "build:cli": "tsc -p tsconfig.cli.json && node -e \"require('fs').copyFileSync('package.json','dist/cli/package.json')\"",
     "build:extension": "esbuild extension/task/index.ts --bundle --platform=node --target=node20 --outfile=dist/extension/task/index.js && node -e \"require('fs').copyFileSync('extension/task/task.json','dist/extension/task/task.json')\"",
     "build:icon": "resvg-js-cli extension/icon.svg extension/icon.png",
     "dev": "ts-node cli/src/index.ts",
