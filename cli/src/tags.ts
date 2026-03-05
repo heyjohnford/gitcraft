@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 import semver from 'semver'
 
 export interface TagResolution {
@@ -22,7 +22,9 @@ export function resolveLatestTag(prefix: string = 'v'): TagResolution {
     return makeInitial(prefix)
   }
 
-  if (!rawOutput) return makeInitial(prefix)
+  if (!rawOutput) {
+    return makeInitial(prefix)
+  }
 
   const candidates = rawOutput
     .split('\n')
@@ -35,7 +37,9 @@ export function resolveLatestTag(prefix: string = 'v'): TagResolution {
     })
     .filter((e): e is { tag: string; latest: string } => e !== null)
 
-  if (candidates.length === 0) return makeInitial(prefix)
+  if (candidates.length === 0) {
+    return makeInitial(prefix)
+  }
 
   // Sort descending so index 0 is the highest version
   candidates.sort((a, b) => semver.rcompare(a.latest, b.latest))
