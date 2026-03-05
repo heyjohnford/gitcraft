@@ -39,15 +39,24 @@ program
         filterPath: opts.path,
       })
 
-      const label = result.dryRun ? ' [dry-run]' : ''
+      let label: string
+      if (result.published) {
+        label = ' [published]'
+      } else if (result.dryRun) {
+        label = ' [dry-run]'
+      } else {
+        label = ' [tag]'
+      }
       console.log(`\nGitCraft Release${label}`)
       console.log(`  ${result.previousVersion}  →  ${result.nextVersion}  (${result.bumpType})`)
       console.log(`  Tag:     ${result.tag}`)
       console.log(`  Commits: ${result.commitCount}`)
-      if (result.published) console.log(`  Published: ${result.tag} pushed to origin`)
-
-      if (result.dryRun) {
-        console.log('\nDry run — no plugins ran, no files were written.')
+      if (result.published) {
+        console.log(`\nPublished: ${result.tag} pushed to origin`)
+      } else if (result.nextVersion === result.previousVersion) {
+        console.log('\nNo version bump needed based on commit messages')
+      } else if (result.dryRun) {
+        console.log('\nThis was a dry run — no changes were made')
       }
     } catch (err) {
       console.error(`\nError: ${(err as Error).message}`)
